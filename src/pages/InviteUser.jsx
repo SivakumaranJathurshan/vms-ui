@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AppLayout from "../components/AppLayout";
 
 function InviteUser() {
   const [fullName, setFullName] = useState("");
@@ -31,63 +32,75 @@ function InviteUser() {
         return;
       }
 
-      setMessage("User invited successfully");
+      setMessage(data.message || "User invited successfully");
       setActivationLink(data.activationLink || "");
-    } catch (error) {
-      console.error(error);
-      setMessage("Error inviting user");
+      setFullName("");
+      setEmail("");
+      setRoleName("Resident");
+    } catch {
+      setMessage("Unable to connect to server");
     }
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Invite User</h2>
+    <AppLayout
+      title="Invite User"
+      subtitle="Invite residents or security staff to your organization"
+      menuItems={[
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Create Visitor", path: "/create-visitor" },
+        { label: "View Visitors", path: "/visitors" },
+      ]}
+    >
+      <div className="card" style={{ maxWidth: "700px" }}>
+        <div className="form-grid">
+          <div className="form-group">
+            <label className="label">Full Name</label>
+            <input
+              className="input"
+              placeholder="Enter full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
 
-      <div>
-        <input
-          placeholder="Full Name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-      </div>
+          <div className="form-group">
+            <label className="label">Email</label>
+            <input
+              className="input"
+              placeholder="Enter email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-      <br />
-
-      <div>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-
-      <br />
-
-      <div>
-        <select
-          value={roleName}
-          onChange={(e) => setRoleName(e.target.value)}
-        >
-          <option value="Resident">Resident</option>
-          <option value="Security">Security</option>
-        </select>
-      </div>
-
-      <br />
-
-      <button onClick={inviteUser}>
-        Invite User
-      </button>
-
-      <p>{message}</p>
-
-      {activationLink && (
-        <div>
-          <strong>Activation Link:</strong>
-          <p>{activationLink}</p>
+          <div className="form-group">
+            <label className="label">Role</label>
+            <select
+              className="select"
+              value={roleName}
+              onChange={(e) => setRoleName(e.target.value)}
+            >
+              <option value="Resident">Resident</option>
+              <option value="Security">Security</option>
+            </select>
+          </div>
         </div>
-      )}
-    </div>
+
+        <button className="btn btn-primary" onClick={inviteUser}>
+          Send Invitation
+        </button>
+
+        {message && <p className="message">{message}</p>}
+
+        {activationLink && (
+          <div className="info-box">
+            <strong>Activation Link</strong>
+            <p>{activationLink}</p>
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
 }
 

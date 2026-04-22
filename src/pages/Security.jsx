@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AppLayout from "../components/AppLayout";
 
 function Security() {
   const [visitors, setVisitors] = useState([]);
@@ -40,10 +41,9 @@ function Security() {
         return;
       }
 
-      console.log(data);
       setGeneratedOtp({
-      ...generatedOtp,
-      [visitorId]: data.code || data.otp,
+        ...generatedOtp,
+        [visitorId]: data.code || data.otp,
       });
 
       setMessage(`OTP generated for visitor ${visitorId}`);
@@ -74,6 +74,7 @@ function Security() {
 
       if (!verifyResponse.ok) {
         const errorText = await verifyResponse.text();
+        console.log("Verify OTP failed:", errorText);
         setMessage(errorText || "OTP verification failed");
         return;
       }
@@ -95,17 +96,6 @@ function Security() {
       }
 
       setMessage("Visitor checked in successfully");
-
-      setGeneratedOtp({
-        ...generatedOtp,
-        [visitorId]: "",
-      });
-
-      setOtpInputs({
-        ...otpInputs,
-        [visitorId]: "",
-      });
-
       loadVisitors();
     } catch {
       setMessage("Error connecting to server");
@@ -113,111 +103,120 @@ function Security() {
   };
 
   const checkout = async (visitorId) => {
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const response = await fetch(
-      `https://localhost:7043/api/visit/checkout-by-visitor/${visitorId}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + token,
-        },
+      const response = await fetch(
+        `https://localhost:7043/api/visit/checkout-by-visitor/${visitorId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        setMessage("Checkout failed");
+        return;
       }
-    );
 
-    if (!response.ok) {
-      setMessage("Checkout failed");
-      return;
+      setMessage("Visitor checked out");
+      loadVisitors();
+    } catch {
+      setMessage("Error during checkout");
     }
-
-    setMessage("Visitor checked out");
-
-    loadVisitors();
-  } catch {
-    setMessage("Error during checkout");
-  }
   };
-  
+
   useEffect(() => {
     loadVisitors();
   }, []);
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Security Check-in</h2>
-
-      <table border="1" cellPadding="10">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Purpose</th>
-            <th>Status</th>
-            <th>OTP</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {visitors.map((v) => (
-            <tr key={v.visitorId}>
-              <td>{v.fullName}</td>
-              <td>{v.purpose}</td>
-              <td>{v.status}</td>
-
-              <td>
-                <input
-                  placeholder="Enter OTP"
-                  value={otpInputs[v.visitorId] || ""}
-                  onChange={(e) =>
-                    setOtpInputs({
-                      ...otpInputs,
-                      [v.visitorId]: e.target.value,
-                    })
-                  }
-                />
-              </td>
-
-              <td>
-                {v.status === "Approved" && (
-                  <>
-                    <button onClick={() => sendOtp(v.visitorId)}>
-                      Send OTP
-                    </button>
-
-                    <button
-                      onClick={() => verifyAndCheckIn(v.visitorId)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Verify OTP & Check In
-                    </button>
-
-                    <button
-                      onClick={() => checkout(v.visitorId)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Check Out
-                    </button>
-                  </>
-                )}
-              </td>
+    <AppLayout
+      title="Security Check-in"
+      subtitle="Generate OTP, verify visitor, and manage entry/exit"
+      menuItems={[
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Create Walk-in Visitor", path: "/create-visitor" },
+        { label: "View Visitors", path: "/visitors" },
+      ]}
+    >
+      <div className="table-card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>OTP</th>
+              <th>Actions</th>
             </tr>
+          </thead>
+
+          <tbody>
+            {visitors.map((v) => (
+              <tr key={v.visitorId}>
+                <td>{v.fullName}</td>
+                <td>{v.purpose}</td>
+                <td>{v.status}</td>
+                <td>
+                  <input
+                    className="input"
+                    placeholder="Enter OTP"
+                    value={otpInputs[v.visitorId] || ""}
+                    onChange={(e) =>
+                      setOtpInputs({
+                        ...otpInputs,
+                        [v.visitorId]: e.target.value,
+                      })
+                    }
+                  />
+                </td>
+                <td>
+                  {(v.status === "Approved" || v.status === "OTP Sent") && (
+                    <>
+                      <button
+                        className="btn btn-warning"
+                        onClick={() => sendOtp(v.visitorId)}
+                      >
+                        Send OTP
+                      </button>
+
+                      <button
+                        className="btn btn-success"
+                        onClick={() => verifyAndCheckIn(v.visitorId)}
+                      >
+                        Check In
+                      </button>
+                    </>
+                  )}
+                {v.status === "Checked In" && (
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => checkout(v.visitorId)}
+                  >
+                    Check Out
+                  </button>
+                )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {message && <p className="message">{message}</p>}
+
+        <div className="info-box" style={{ marginTop: "20px" }}>
+          <strong>Generated OTPs (Demo Only)</strong>
+          {Object.keys(generatedOtp).map((id) => (
+            <p key={id}>
+              Visitor {id}: {generatedOtp[id]}
+            </p>
           ))}
-        </tbody>
-      </table>
-
-      <p>{message}</p>
-
-      {/* For demo only */}
-      <div style={{ marginTop: "20px" }}>
-        <h4>Generated OTPs (Demo Only)</h4>
-        {Object.keys(generatedOtp).map((id) => (
-          <p key={id}>
-            Visitor {id}: {generatedOtp[id]}
-          </p>
-        ))}
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

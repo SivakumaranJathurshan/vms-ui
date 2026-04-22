@@ -1,31 +1,40 @@
-import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
 function AdminDashboard() {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Admin Dashboard</h2>
+    <AppLayout
+      title="Admin Dashboard"
+      menuItems={[
+        { label: "Invite User", path: "/invite" },
+        { label: "Create Visitor", path: "/create-visitor" },
+        { label: "View Visitors", path: "/visitors" }
+      ]}
+    >
+      <div className="stats">
+        <div className="stat-card">
+          <h3>Total Users</h3>
+          <p>--</p>
+        </div>
 
-      <button onClick={() => navigate("/invite")}>Invite User</button>
+        <div className="stat-card">
+          <h3>Total Visitors</h3>
+          <p>--</p>
+        </div>
 
-      <br /><br />
+        <div className="stat-card">
+          <h3>Pending Approvals</h3>
+          <p>--</p>
+        </div>
+      </div>
 
-      <button onClick={() => navigate("/create-visitor")}>Create Visitor</button>
-
-      <br /><br />
-
-      <button onClick={() => navigate("/visitors")}>View Visitors</button>
-
-      <br /><br />
-
-      <button onClick={logout}>Logout</button>
-    </div>
+      <div className="table-card">
+        <h3>Welcome Admin</h3>
+        <p>
+          Manage your organization users, visitor approvals, invitations and
+          security workflow from one place.
+        </p>
+      </div>
+    </AppLayout>
   );
 }
 

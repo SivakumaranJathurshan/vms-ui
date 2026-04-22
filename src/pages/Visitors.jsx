@@ -1,4 +1,15 @@
 import { useEffect, useState } from "react";
+import AppLayout from "../components/AppLayout";
+
+function getBadgeClass(status) {
+  if (status === "Pending Approval") return "badge badge-pending";
+  if (status === "Approved") return "badge badge-approved";
+  if (status === "Rejected") return "badge badge-rejected";
+  if (status === "OTP Sent") return "badge badge-checked";
+  if (status === "Checked In") return "badge badge-approved";
+  if (status === "Checked Out") return "badge badge-checked";
+  return "badge";
+}
 
 function Visitors() {
   const [visitors, setVisitors] = useState([]);
@@ -34,38 +45,52 @@ function Visitors() {
   }, []);
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Visitors</h2>
-
-      <table border="1" cellPadding="10">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Purpose</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visitors.map((v) => (
-            <tr key={v.visitorId}>
-              <td>{v.fullName}</td>
-              <td>{v.mobile}</td>
-              <td>{v.purpose}</td>
-              <td>{v.status}</td>
-              <td>
-                {v.status === "Pending" && (
-                  <button onClick={() => approveVisitor(v.visitorId)}>
-                    Approve
-                  </button>
-                )}
-              </td>
+    <AppLayout
+      title="Visitors"
+      subtitle="View and manage visitor requests"
+      menuItems={[
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Create Visitor", path: "/create-visitor" },
+        { label: "Security Check-in", path: "/security" },
+      ]}
+    >
+      <div className="table-card">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+
+          <tbody>
+            {visitors.map((v) => (
+              <tr key={v.visitorId}>
+                <td>{v.fullName}</td>
+                <td>{v.mobile}</td>
+                <td>{v.purpose}</td>
+                <td>
+                  <span className={getBadgeClass(v.status)}>{v.status}</span>
+                </td>
+                <td>
+                  {v.status === "Pending Approval" && (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => approveVisitor(v.visitorId)}
+                    >
+                      Approve
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </AppLayout>
   );
 }
 

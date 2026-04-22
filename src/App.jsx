@@ -8,6 +8,7 @@ import ActivateAccount from "./pages/ActivateAccount";
 import CreateVisitor from "./pages/CreateVisitor";
 import Visitors from "./pages/Visitors";
 import Security from "./pages/Security";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/create-visitor" element={<CreateVisitor />} />
         <Route path="/visitors" element={<Visitors />} />
         <Route path="/security" element={<Security />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Routes>
     </BrowserRouter>
   );

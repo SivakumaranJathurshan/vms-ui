@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AppLayout from "../components/AppLayout";
 
 function CreateVisitor() {
   const [fullName, setFullName] = useState("");
@@ -29,21 +30,16 @@ function CreateVisitor() {
 
       setUserRole(role);
 
-      // if resident → auto select themselves
       if (role === "Resident") {
         setResidentId(user.UserId);
         return;
       }
 
-      // admin/security → load dropdown
-      const response = await fetch(
-        "https://localhost:7043/api/User/residents",
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }
-      );
+      const response = await fetch("https://localhost:7043/api/User/residents", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
 
       const data = await response.json();
 
@@ -85,11 +81,11 @@ function CreateVisitor() {
       }
 
       setMessage("Visitor created successfully");
-
       setFullName("");
       setMobile("");
       setPurpose("");
       setVisitDate("");
+      if (userRole !== "Resident") setResidentId("");
     } catch {
       setMessage("Error connecting to server");
     }
@@ -100,66 +96,83 @@ function CreateVisitor() {
   }, []);
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Create Visitor</h2>
+    <AppLayout
+      title="Create Visitor"
+      subtitle="Register a visitor for approval and entry"
+      menuItems={[
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "View Visitors", path: "/visitors" },
+        { label: "Invite User", path: "/invite" },
+      ]}
+    >
+      <div className="card" style={{ maxWidth: "760px" }}>
+        <div className="form-grid">
+          <div className="form-group">
+            <label className="label">Visitor Name</label>
+            <input
+              className="input"
+              placeholder="Enter visitor name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
 
-      <input
-        placeholder="Visitor Name"
-        value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
-      />
+          <div className="form-group">
+            <label className="label">Mobile Number</label>
+            <input
+              className="input"
+              placeholder="Enter mobile number"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+            />
+          </div>
 
-      <br /><br />
+          <div className="form-group">
+            <label className="label">Purpose</label>
+            <input
+              className="input"
+              placeholder="Enter purpose"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+            />
+          </div>
 
-      <input
-        placeholder="Mobile"
-        value={mobile}
-        onChange={(e) => setMobile(e.target.value)}
-      />
+          <div className="form-group">
+            <label className="label">Visit Date & Time</label>
+            <input
+              className="input"
+              type="datetime-local"
+              value={visitDate}
+              onChange={(e) => setVisitDate(e.target.value)}
+            />
+          </div>
 
-      <br /><br />
+          {userRole !== "Resident" && (
+            <div className="form-group full-width">
+              <label className="label">Assign Resident</label>
+              <select
+                className="select"
+                value={residentId}
+                onChange={(e) => setResidentId(e.target.value)}
+              >
+                <option value="">Select Resident</option>
+                {residents.map((resident) => (
+                  <option key={resident.userId} value={resident.userId}>
+                    {resident.fullName} ({resident.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
 
-      <input
-        placeholder="Purpose"
-        value={purpose}
-        onChange={(e) => setPurpose(e.target.value)}
-      />
+        <button className="btn btn-primary" onClick={createVisitor}>
+          Create Visitor
+        </button>
 
-      <br /><br />
-
-      <input
-        type="datetime-local"
-        value={visitDate}
-        onChange={(e) => setVisitDate(e.target.value)}
-      />
-
-      <br /><br />
-
-      {/* Show dropdown only for Admin/Security */}
-      {userRole !== "Resident" && (
-        <>
-          <select
-            value={residentId}
-            onChange={(e) => setResidentId(e.target.value)}
-          >
-            <option value="">Select Resident</option>
-            {residents.map((resident) => (
-              <option key={resident.userId} value={resident.userId}>
-                {resident.fullName} ({resident.email})
-              </option>
-            ))}
-          </select>
-
-          <br /><br />
-        </>
-      )}
-
-      <button onClick={createVisitor}>
-        Create Visitor
-      </button>
-
-      <p>{message}</p>
-    </div>
+        {message && <p className="message">{message}</p>}
+      </div>
+    </AppLayout>
   );
 }
 

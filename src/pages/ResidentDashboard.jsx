@@ -1,31 +1,32 @@
-import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
 function ResidentDashboard() {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Resident Dashboard</h2>
+    <AppLayout
+      title="Resident Dashboard"
+      subtitle="Manage your visitor requests and approvals"
+      menuItems={[
+        { label: "Create Visitor", path: "/create-visitor" },
+        { label: "My Visitors", path: "/visitors" },
+      ]}
+    >
+      <div className="stats">
+        <div className="stat-card">
+          <h3>Pending Visitors</h3>
+          <p>--</p>
+        </div>
 
-      <button onClick={() => navigate("/create-visitor")}>
-        Create Visitor
-      </button>
+        <div className="stat-card">
+          <h3>Approved Visitors</h3>
+          <p>--</p>
+        </div>
+      </div>
 
-      <br /><br />
-
-      <button onClick={() => navigate("/visitors")}>
-        My Visitors / Approvals
-      </button>
-
-      <br /><br />
-
-      <button onClick={logout}>Logout</button>
-    </div>
+      <div className="table-card">
+        <h3>Resident Actions</h3>
+        <p>Create visitor requests and approve assigned visitors from one place.</p>
+      </div>
+    </AppLayout>
   );
 }
 

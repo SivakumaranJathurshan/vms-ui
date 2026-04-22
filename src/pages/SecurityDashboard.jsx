@@ -1,37 +1,33 @@
-import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
 function SecurityDashboard() {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Security Dashboard</h2>
+    <AppLayout
+      title="Security Dashboard"
+      subtitle="Manage walk-in visitors, OTP verification, and gate operations"
+      menuItems={[
+        { label: "Create Walk-in Visitor", path: "/create-visitor" },
+        { label: "Security Check-in", path: "/security" },
+        { label: "View Visitors", path: "/visitors" },
+      ]}
+    >
+      <div className="stats">
+        <div className="stat-card">
+          <h3>Approved Visitors</h3>
+          <p>--</p>
+        </div>
 
-      <button onClick={() => navigate("/create-visitor")}>
-        Create Walk-in Visitor
-      </button>
+        <div className="stat-card">
+          <h3>Checked-in Today</h3>
+          <p>--</p>
+        </div>
+      </div>
 
-      <br /><br />
-
-      <button onClick={() => navigate("/security")}>
-        Security Check-in / Check-out
-      </button>
-
-      <br /><br />
-
-      <button onClick={() => navigate("/visitors")}>
-        View Visitors
-      </button>
-
-      <br /><br />
-
-      <button onClick={logout}>Logout</button>
-    </div>
+      <div className="table-card">
+        <h3>Security Operations</h3>
+        <p>Handle visitor arrivals, OTP verification, check-in, and check-out.</p>
+      </div>
+    </AppLayout>
   );
 }
 
