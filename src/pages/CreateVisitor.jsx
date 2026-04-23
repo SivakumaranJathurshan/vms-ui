@@ -10,6 +10,7 @@ function CreateVisitor() {
   const [residents, setResidents] = useState([]);
   const [userRole, setUserRole] = useState("");
   const [message, setMessage] = useState("");
+  const [matches, setMatches] = useState([]);
 
   const parseJwt = (token) => {
     try {
@@ -54,6 +55,44 @@ function CreateVisitor() {
     }
   };
 
+  const searchVisitors = async (term) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!term || term.trim().length < 2) {
+        setMatches([]);
+        return;
+      }
+
+      const response = await fetch(
+        `https://localhost:7043/api/visitor/search?term=${encodeURIComponent(term)}`,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMatches([]);
+        return;
+      }
+
+      setMatches(data);
+    } catch {
+      setMatches([]);
+    }
+  };
+
+  const selectExistingVisitor = (visitor) => {
+    setFullName(visitor.fullName);
+    setMobile(visitor.mobile);
+    setMatches([]);
+    setMessage("Existing visitor details loaded. Complete the visit details.");
+  };
+
   const createVisitor = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -85,6 +124,7 @@ function CreateVisitor() {
       setMobile("");
       setPurpose("");
       setVisitDate("");
+      setMatches([]);
       if (userRole !== "Resident") setResidentId("");
     } catch {
       setMessage("Error connecting to server");
@@ -98,7 +138,7 @@ function CreateVisitor() {
   return (
     <AppLayout
       title="Create Visitor"
-      subtitle="Register a visitor for approval and entry"
+      subtitle="Register a new visit request"
       menuItems={[
         { label: "Dashboard", path: "/dashboard" },
         { label: "View Visitors", path: "/visitors" },
@@ -113,7 +153,10 @@ function CreateVisitor() {
               className="input"
               placeholder="Enter visitor name"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                searchVisitors(e.target.value);
+              }}
             />
           </div>
 
@@ -123,10 +166,34 @@ function CreateVisitor() {
               className="input"
               placeholder="Enter mobile number"
               value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) => {
+                setMobile(e.target.value);
+                searchVisitors(e.target.value);
+              }}
             />
           </div>
+        </div>
 
+        {matches.length > 0 && (
+          <div className="info-box" style={{ marginBottom: "20px" }}>
+            <strong>Suggested Existing Visitors</strong>
+            {matches.map((visitor, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: "10px 0",
+                  borderBottom: "1px solid #dbeafe",
+                  cursor: "pointer"
+                }}
+                onClick={() => selectExistingVisitor(visitor)}
+              >
+                {visitor.fullName} - {visitor.mobile}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="form-grid">
           <div className="form-group">
             <label className="label">Purpose</label>
             <input
@@ -167,7 +234,7 @@ function CreateVisitor() {
         </div>
 
         <button className="btn btn-primary" onClick={createVisitor}>
-          Create Visitor
+          Create New Visit Request
         </button>
 
         {message && <p className="message">{message}</p>}

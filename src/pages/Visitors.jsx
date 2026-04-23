@@ -11,33 +11,54 @@ function getBadgeClass(status) {
   return "badge";
 }
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
+}
+
 function Visitors() {
   const [visitors, setVisitors] = useState([]);
+  const [message, setMessage] = useState("");
 
   const loadVisitors = async () => {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const response = await fetch("https://localhost:7043/api/visitor", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    });
+      const response = await fetch("https://localhost:7043/api/visitor", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
 
-    const data = await response.json();
-    setVisitors(data);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage("Failed to load visitors");
+        return;
+      }
+
+      setVisitors(data);
+    } catch {
+      setMessage("Unable to load visitors");
+    }
   };
 
   const approveVisitor = async (id) => {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    await fetch(`https://localhost:7043/api/visitor/approve/${id}`, {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    });
+      await fetch(`https://localhost:7043/api/visitor/approve/${id}`, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
 
-    loadVisitors();
+      setMessage("Visitor approved");
+      loadVisitors();
+    } catch {
+      setMessage("Approval failed");
+    }
   };
 
   useEffect(() => {
@@ -47,21 +68,26 @@ function Visitors() {
   return (
     <AppLayout
       title="Visitors"
-      subtitle="View and manage visitor requests"
+      subtitle="Track requests, approvals, check-ins and exits"
       menuItems={[
         { label: "Dashboard", path: "/dashboard" },
         { label: "Create Visitor", path: "/create-visitor" },
-        { label: "Security Check-in", path: "/security" },
+        { label: "Security", path: "/security" },
       ]}
     >
       <div className="table-card">
+        {message && <p className="message">{message}</p>}
+
         <table className="table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Mobile</th>
-              <th>Purpose</th>
               <th>Status</th>
+              <th>Visit Date</th>
+              <th>Approved</th>
+              <th>Check In</th>
+              <th>Check Out</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -71,10 +97,18 @@ function Visitors() {
               <tr key={v.visitorId}>
                 <td>{v.fullName}</td>
                 <td>{v.mobile}</td>
-                <td>{v.purpose}</td>
+
                 <td>
-                  <span className={getBadgeClass(v.status)}>{v.status}</span>
+                  <span className={getBadgeClass(v.status)}>
+                    {v.status}
+                  </span>
                 </td>
+
+                <td>{formatDateTime(v.visitDate)}</td>
+                <td>{formatDateTime(v.approvedAt)}</td>
+                <td>{formatDateTime(v.checkedInAt)}</td>
+                <td>{formatDateTime(v.checkedOutAt)}</td>
+
                 <td>
                   {v.status === "Pending Approval" && (
                     <button

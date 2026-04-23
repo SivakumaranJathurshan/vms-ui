@@ -68,20 +68,7 @@ function Login() {
   );
 }
 
-export default Login;function Login() {
-  return (
-    <div style={{ background: "red", color: "white", padding: "40px" }}>
-      <h1>TEST LOGIN PAGE</h1>
-    </div>
-  );
-}
 
-export default Login;function Login() {
-  return (
-    <div style={{ background: "red", color: "white", padding: "40px" }}>
-      <h1>TEST LOGIN PAGE</h1>
-    </div>
-  );
-}
 
 export default Login;
+
