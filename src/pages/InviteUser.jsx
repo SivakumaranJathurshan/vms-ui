@@ -9,6 +9,26 @@ function InviteUser() {
   const [activationLink, setActivationLink] = useState("");
 
   const inviteUser = async () => {
+    if (!fullName.trim()) {
+    setMessage("Full name is required");
+    return;
+    }
+
+    if (!email.trim()) {
+    setMessage("Email is required");
+    return;
+    }
+
+    if (!email.includes("@")) {
+    setMessage("Enter a valid email address");
+    return;
+    }
+
+    if (!roleName) {
+    setMessage("Role is required");
+    return;
+    }
+
     try {
       const token = localStorage.getItem("token");
 

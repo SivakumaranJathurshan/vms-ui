@@ -9,20 +9,70 @@ import CreateVisitor from "./pages/CreateVisitor";
 import Visitors from "./pages/Visitors";
 import Security from "./pages/Security";
 import VerifyEmail from "./pages/VerifyEmail";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<CreateOrganization />} />
+        {/* Public Routes */}
+        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/invite" element={<InviteUser />} />
+        <Route path="/create-organization" element={<CreateOrganization />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/activate" element={<ActivateAccount />} />
-        <Route path="/create-visitor" element={<CreateVisitor />} />
-        <Route path="/visitors" element={<Visitors />} />
-        <Route path="/security" element={<Security />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Shared Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Admin", "Resident", "Security"]}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-visitor"
+          element={
+            <ProtectedRoute allowedRoles={["Admin", "Resident", "Security"]}>
+              <CreateVisitor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/visitors"
+          element={
+            <ProtectedRoute allowedRoles={["Admin", "Resident", "Security"]}>
+              <Visitors />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Only */}
+        <Route
+          path="/invite"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <InviteUser />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Security Only */}
+        <Route
+          path="/security"
+          element={
+            <ProtectedRoute allowedRoles={["Security"]}>
+              <Security />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

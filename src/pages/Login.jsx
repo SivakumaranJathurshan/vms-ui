@@ -8,6 +8,16 @@ function Login() {
   const navigate = useNavigate();
 
   const login = async () => {
+    if (!email.trim()) {
+    setMessage("Email is required");
+    return;
+    }
+
+    if (!password.trim()) {
+    setMessage("Password is required");
+    return;
+    }
+    
     try {
       const response = await fetch("https://localhost:7043/api/auth/login", {
         method: "POST",
@@ -35,6 +45,7 @@ function Login() {
   return (
     <div className="center-page">
       <div className="card">
+        <img src="/pwa-192.png" alt="VMS Logo" className="auth-logo" />
         <div className="title">Visitor Management System</div>
         <div className="subtitle">Sign in to continue</div>
 
@@ -61,6 +72,23 @@ function Login() {
         <button className="btn btn-primary" onClick={login}>
           Login
         </button>
+
+        <div style={{ marginTop: "16px" }}>
+          <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/create-organization")}
+          >
+          Create Organization
+          </button>
+
+          <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/forgot-password")}
+          style={{ marginLeft: "10px" }}
+          >
+          Forgot Password
+          </button>
+        </div>
 
         <p className="message">{message}</p>
       </div>

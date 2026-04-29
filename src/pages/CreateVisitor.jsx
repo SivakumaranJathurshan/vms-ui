@@ -94,6 +94,31 @@ function CreateVisitor() {
   };
 
   const createVisitor = async () => {
+    if (!fullName.trim()) {
+    setMessage("Visitor name is required");
+    return;
+    }
+
+    if (!mobile.trim()) {
+    setMessage("Mobile number is required");
+    return;
+    }
+
+    if (!purpose.trim()) {
+    setMessage("Purpose is required");
+    return;
+    }
+
+    if (!visitDate) {
+    setMessage("Visit date and time is required");
+    return;
+    }
+
+    if (!residentId) {
+    setMessage("Resident must be selected");
+    return;
+    }
+    
     try {
       const token = localStorage.getItem("token");
 

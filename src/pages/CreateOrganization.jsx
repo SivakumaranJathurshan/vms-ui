@@ -47,6 +47,7 @@ function CreateOrganization() {
   return (
     <div className="center-page">
       <div className="card">
+        <img src="/pwa-192.png" alt="VMS Logo" className="auth-logo" />
         <div className="title">Create Organization</div>
         <div className="subtitle">Set up your VMS workspace</div>
 
@@ -73,6 +74,15 @@ function CreateOrganization() {
         <button className="btn btn-primary" onClick={createOrganization}>
           Create Organization
         </button>
+
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/login")}
+          style={{ marginLeft: "10px" }}
+        >
+          Back to Login
+        </button>
+        
 
         <p className="message">{message}</p>
       </div>

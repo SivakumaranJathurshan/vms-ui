@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { Clock3, CheckCircle2, LogIn } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
+}
+
 function ResidentDashboard() {
   const [stats, setStats] = useState({
     myPendingApprovals: 0,
@@ -9,31 +14,38 @@ function ResidentDashboard() {
     myCheckedInVisitors: 0,
   });
 
+  const [todaysVisitors, setTodaysVisitors] = useState([]);
+
   useEffect(() => {
-    const loadStats = async () => {
+    const loadDashboard = async () => {
       const token = localStorage.getItem("token");
 
       try {
-        const response = await fetch(
-          "https://localhost:7043/api/visitor/resident-dashboard-stats",
-          {
+        const [statsRes, todayRes] = await Promise.all([
+          fetch("https://localhost:7043/api/visitor/resident-dashboard-stats", {
             headers: { Authorization: "Bearer " + token },
-          }
-        );
+          }),
+          fetch("https://localhost:7043/api/visitor/today", {
+            headers: { Authorization: "Bearer " + token },
+          }),
+        ]);
 
-        const data = await response.json();
+        const statsData = await statsRes.json();
+        const todayData = await todayRes.json();
 
         setStats({
-          myPendingApprovals: data.myPendingApprovals || 0,
-          myApprovedVisitors: data.myApprovedVisitors || 0,
-          myCheckedInVisitors: data.myCheckedInVisitors || 0,
+          myPendingApprovals: statsData.myPendingApprovals || 0,
+          myApprovedVisitors: statsData.myApprovedVisitors || 0,
+          myCheckedInVisitors: statsData.myCheckedInVisitors || 0,
         });
+
+        setTodaysVisitors(todayData || []);
       } catch (error) {
-        console.error("Failed to load resident dashboard stats", error);
+        console.error("Failed to load resident dashboard", error);
       }
     };
 
-    loadStats();
+    loadDashboard();
   }, []);
 
   return (
@@ -71,16 +83,40 @@ function ResidentDashboard() {
         </div>
       </div>
 
-      <div className="dashboard-panel">
-        <h3>Overview</h3>
-        <p>
-          Review incoming requests, track approvals, and monitor visitor entry
-          under your assigned residence.
-        </p>
+      <div className="table-card">
+        <h3 className="dashboard-table-title">Today’s Visitors</h3>
+
+        {todaysVisitors.length === 0 ? (
+          <p className="empty-state">No visitors assigned to you today.</p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Visit Time</th>
+                <th>Approved At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todaysVisitors.map((v) => (
+                <tr key={v.visitorId}>
+                  <td>{v.fullName}</td>
+                  <td>{v.mobile}</td>
+                  <td>{v.purpose}</td>
+                  <td>{v.status}</td>
+                  <td>{formatDateTime(v.visitDate)}</td>
+                  <td>{formatDateTime(v.approvedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </AppLayout>
   );
 }
 
 export default ResidentDashboard;
-

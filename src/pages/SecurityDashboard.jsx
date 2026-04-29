@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { CheckCheck, UserPlus, LogIn, LogOut } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
+}
+
 function SecurityDashboard() {
   const [stats, setStats] = useState({
     approvedVisitorsForToday: 0,
@@ -10,32 +15,39 @@ function SecurityDashboard() {
     checkedOutToday: 0,
   });
 
+  const [todaysVisitors, setTodaysVisitors] = useState([]);
+
   useEffect(() => {
-    const loadStats = async () => {
+    const loadDashboard = async () => {
       const token = localStorage.getItem("token");
 
       try {
-        const response = await fetch(
-          "https://localhost:7043/api/visitor/security-dashboard-stats",
-          {
+        const [statsRes, todayRes] = await Promise.all([
+          fetch("https://localhost:7043/api/visitor/security-dashboard-stats", {
             headers: { Authorization: "Bearer " + token },
-          }
-        );
+          }),
+          fetch("https://localhost:7043/api/visitor/today", {
+            headers: { Authorization: "Bearer " + token },
+          }),
+        ]);
 
-        const data = await response.json();
+        const statsData = await statsRes.json();
+        const todayData = await todayRes.json();
 
         setStats({
-          approvedVisitorsForToday: data.approvedVisitorsForToday || 0,
-          walkInVisitorsForToday: data.walkInVisitorsForToday || 0,
-          currentlyCheckedIn: data.currentlyCheckedIn || 0,
-          checkedOutToday: data.checkedOutToday || 0,
+          approvedVisitorsForToday: statsData.approvedVisitorsForToday || 0,
+          walkInVisitorsForToday: statsData.walkInVisitorsForToday || 0,
+          currentlyCheckedIn: statsData.currentlyCheckedIn || 0,
+          checkedOutToday: statsData.checkedOutToday || 0,
         });
+
+        setTodaysVisitors(todayData || []);
       } catch (error) {
-        console.error("Failed to load security dashboard stats", error);
+        console.error("Failed to load security dashboard", error);
       }
     };
 
-    loadStats();
+    loadDashboard();
   }, []);
 
   return (
@@ -82,11 +94,39 @@ function SecurityDashboard() {
         </div>
       </div>
 
-      <div className="dashboard-panel">
-        <h3>Overview</h3>
-        <p>
-          Track approved arrivals, walk-ins, and all current gate movement for today.
-        </p>
+      <div className="table-card">
+        <h3 className="dashboard-table-title">Today’s Visitors</h3>
+
+        {todaysVisitors.length === 0 ? (
+          <p className="empty-state">No visitors scheduled for today.</p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Visit Time</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todaysVisitors.map((v) => (
+                <tr key={v.visitorId}>
+                  <td>{v.fullName}</td>
+                  <td>{v.mobile}</td>
+                  <td>{v.purpose}</td>
+                  <td>{v.status}</td>
+                  <td>{formatDateTime(v.visitDate)}</td>
+                  <td>{formatDateTime(v.checkedInAt)}</td>
+                  <td>{formatDateTime(v.checkedOutAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </AppLayout>
   );

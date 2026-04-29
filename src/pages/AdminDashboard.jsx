@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
+}
+
 function AdminDashboard() {
   const [stats, setStats] = useState({
     securityUsers: 0,
@@ -19,22 +24,28 @@ function AdminDashboard() {
     walkInVisitors: 0,
   });
 
+  const [todaysVisitors, setTodaysVisitors] = useState([]);
+
   useEffect(() => {
-    const loadStats = async () => {
+    const loadDashboard = async () => {
       const token = localStorage.getItem("token");
 
       try {
-        const [userRes, visitorRes] = await Promise.all([
+        const [userRes, visitorRes, todayRes] = await Promise.all([
           fetch("https://localhost:7043/api/User/dashboard-stats", {
             headers: { Authorization: "Bearer " + token },
           }),
           fetch("https://localhost:7043/api/visitor/admin-dashboard-stats", {
             headers: { Authorization: "Bearer " + token },
           }),
+          fetch("https://localhost:7043/api/visitor/today", {
+            headers: { Authorization: "Bearer " + token },
+          }),
         ]);
 
         const userData = await userRes.json();
         const visitorData = await visitorRes.json();
+        const todayData = await todayRes.json();
 
         setStats({
           securityUsers: userData.securityUsers || 0,
@@ -44,12 +55,14 @@ function AdminDashboard() {
           checkedInVisitors: visitorData.checkedInVisitors || 0,
           walkInVisitors: visitorData.walkInVisitors || 0,
         });
+
+        setTodaysVisitors(todayData || []);
       } catch (error) {
-        console.error("Failed to load admin dashboard stats", error);
+        console.error("Failed to load admin dashboard", error);
       }
     };
 
-    loadStats();
+    loadDashboard();
   }, []);
 
   return (
@@ -112,16 +125,42 @@ function AdminDashboard() {
         </div>
       </div>
 
-      <div className="dashboard-panel">
-        <h3>Overview</h3>
-        <p>
-          This dashboard provides a live summary of user distribution, invitation
-          activity, and visitor movement within the organization.
-        </p>
+      <div className="table-card">
+        <h3 className="dashboard-table-title">Today’s Visitors</h3>
+
+        {todaysVisitors.length === 0 ? (
+          <p className="empty-state">No visitors scheduled for today.</p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Visit Time</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todaysVisitors.map((v) => (
+                <tr key={v.visitorId}>
+                  <td>{v.fullName}</td>
+                  <td>{v.mobile}</td>
+                  <td>{v.purpose}</td>
+                  <td>{v.status}</td>
+                  <td>{formatDateTime(v.visitDate)}</td>
+                  <td>{formatDateTime(v.checkedInAt)}</td>
+                  <td>{formatDateTime(v.checkedOutAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </AppLayout>
   );
 }
 
 export default AdminDashboard;
-
