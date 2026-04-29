@@ -6,7 +6,7 @@ function InviteUser() {
   const [email, setEmail] = useState("");
   const [roleName, setRoleName] = useState("Resident");
   const [message, setMessage] = useState("");
-  const [activationLink, setActivationLink] = useState("");
+  
 
   const inviteUser = async () => {
     if (!fullName.trim()) {
@@ -53,7 +53,6 @@ function InviteUser() {
       }
 
       setMessage(data.message || "User invited successfully");
-      setActivationLink(data.activationLink || "");
       setFullName("");
       setEmail("");
       setRoleName("Resident");
@@ -113,12 +112,7 @@ function InviteUser() {
 
         {message && <p className="message">{message}</p>}
 
-        {activationLink && (
-          <div className="info-box">
-            <strong>Activation Link</strong>
-            <p>{activationLink}</p>
-          </div>
-        )}
+        
       </div>
     </AppLayout>
   );
